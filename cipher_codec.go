@@ -1,7 +1,7 @@
 /**
  * \file cipher_codec.go
  */
-package main
+package exocipher
 
 import (
 	"crypto/aes"
@@ -21,14 +21,12 @@ import (
 	"github.com/juju/loggo"
 
 	"github.com/exosite/ps-golang-gopenshift"
+	"github.com/exosite/ps-golang-logger"
 )
 
-var loggerCipher = loggo.GetLogger("tw.cipher")
-
-
-
-func setLogLevelCipher() {
-	exologger.SetLoggerLogLevel(&loggerCipher)
+var loggerCipher = loggo.GetLogger("exo.cipher")
+func SetLogLevel() {
+	exologger.SetLoggerLogLevel(&loggerCipher, nil)
 }
 
 type CipherAPI interface {
@@ -73,13 +71,7 @@ type Cipher struct {
 }
 
 func NewCipher() *Cipher {
-
-
-// FIXME: THIS:
-	// MAYBE: Use a single master file to setup the logs.
-	//        Until then, to each their own: each package
-	//        will manage its own SetLogLevel() call.
-	setLogLevelCipher()
+	//SetLogLevel()
 
 	return &Cipher {
 		//cipherBlock: ,

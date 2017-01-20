@@ -1,7 +1,7 @@
 // cipher_codec_test.go
 // vim:tw=0:ts=4:sw=4:noet
 
-package main
+package exocipher
 
 // FIXME: [lb] needs to flesh this out.
 
