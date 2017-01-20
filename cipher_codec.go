@@ -18,25 +18,17 @@ import (
 	"strings"
 
 	"github.com/jmoiron/jsonq"
-	// See also:
-	//  https://github.com/op/go-logging
 	"github.com/juju/loggo"
 
-	"gopenshift"
+	"github.com/exosite/ps-golang-gopenshift"
 )
 
 var loggerCipher = loggo.GetLogger("tw.cipher")
 
 
 
-// FIXME: Move comment to logger package
-// NOTE: You cannot make a convenience var to the Tracef function, i.e.,
-//          var Tracef = Logger.Tracef
-//          ...
-//          Tracef("blah")
-//       prints the line number of the "var Tracef =" line, not the "Tracef()" line.
 func setLogLevelCipher() {
-	SetLoggerLogLevel(&loggerCipher)
+	exologger.SetLoggerLogLevel(&loggerCipher)
 }
 
 type CipherAPI interface {
