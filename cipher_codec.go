@@ -24,9 +24,9 @@ import (
 	"github.com/exosite/ps-golang-logger"
 )
 
-var loggerCipher = loggo.GetLogger("exo.cipher")
+var logger = loggo.GetLogger("exo.cipher")
 func SetLogLevel() {
-	exologger.SetLoggerLogLevel(&loggerCipher, nil)
+	exologger.SetLoggerLogLevel(&logger, nil)
 }
 
 type CipherAPI interface {
@@ -83,19 +83,19 @@ func (ciph *Cipher) PrepareCipher() (bool, error) {
 		// MAYBE: Put the secret under /app/etc/secrets and use gopenshift.GetSecret.
 		secretsDir, err := gopenshift.GetSaltySecretDir()
 		if err != nil {
-			loggerCipher.Warningf(`PrepareCipher: GetSaltySecretDir: %v / err: %+v`, secretsDir, err)
+			logger.Warningf(`PrepareCipher: GetSaltySecretDir: %v / err: %+v`, secretsDir, err)
 			err = errors.New("Missing salty-secret directory")
 			return false, err
 		}
 		secretPath := filepath.Join(secretsDir, "salty-secret.json")
 		secretContent, err := ioutil.ReadFile(secretPath)
 		if err != nil {
-			loggerCipher.Warningf(`ReadFile: %v / err: %+v`, secretPath, err)
+			logger.Warningf(`ReadFile: %v / err: %+v`, secretPath, err)
 			err = errors.New("Missing salty file")
 			return false, err
 		}
-		loggerCipher.Tracef(`PrepareCipher: secretPath: %v`, secretPath)
-		loggerCipher.Tracef(`PrepareCipher: secretContent: %+v`, secretContent)
+		logger.Tracef(`PrepareCipher: secretPath: %v`, secretPath)
+		logger.Tracef(`PrepareCipher: secretContent: %+v`, secretContent)
 
 		// Decode it into a map[string]interface{}:
 		secret_json := map[string]interface{}{}
@@ -105,16 +105,16 @@ func (ciph *Cipher) PrepareCipher() (bool, error) {
 
 		secretKey_, err := jq.String("data", "salt")
 		if err != nil {
-			loggerCipher.Warningf(`ReadFile: %v / err: %+v`, secretPath, err)
+			logger.Warningf(`ReadFile: %v / err: %+v`, secretPath, err)
 			err = errors.New("Missing data salt")
 			return false, err
 		}
-		loggerCipher.Tracef("DecodeString: secretKey_: %v\n", secretKey_)
-		loggerCipher.Tracef("DecodeString: len(secretKey_): %v\n", len(secretKey_))
+		logger.Tracef("DecodeString: secretKey_: %v\n", secretKey_)
+		logger.Tracef("DecodeString: len(secretKey_): %v\n", len(secretKey_))
 
 		secretKey, _ := hex.DecodeString(secretKey_)
-		loggerCipher.Tracef("DecodeString: secretKey: %v\n", secretKey)
-		loggerCipher.Tracef("DecodeString: len(secretKey): %v\n", len(secretKey))
+		logger.Tracef("DecodeString: secretKey: %v\n", secretKey)
+		logger.Tracef("DecodeString: len(secretKey): %v\n", len(secretKey))
 
 		cipherBlock, err := aes.NewCipher(secretKey)
 		ciph.cipherBlock = cipherBlock
@@ -142,7 +142,7 @@ func (ciph *Cipher) CFBEncrypt(plaintext string) ([]byte, []byte, error) {
 	if _, err := io.ReadFull(rand.Reader, newInitVector); err != nil {
 		return nil, nil, err
 	}
-	loggerCipher.Tracef(`CFBEncrypt: newInitVector: %v`, newInitVector)
+	logger.Tracef(`CFBEncrypt: newInitVector: %v`, newInitVector)
 
 	plaintextBytes := []byte(plaintext)
 
@@ -150,22 +150,22 @@ func (ciph *Cipher) CFBEncrypt(plaintext string) ([]byte, []byte, error) {
 	ciphertext := make([]byte, len(plaintextBytes))
 	cfb.XORKeyStream(ciphertext, plaintextBytes)
 
-	loggerCipher.Tracef(`CFBEncrypt: %s => %v => %x`, plaintext, plaintextBytes, ciphertext)
+	logger.Tracef(`CFBEncrypt: %s => %v => %x`, plaintext, plaintextBytes, ciphertext)
 
-	loggerCipher.Tracef(`CFBEncrypt: plaintext/v: %v`, plaintext)
-	loggerCipher.Tracef(`CFBEncrypt: len(plaintext)/v: %v`, len(plaintext))
+	logger.Tracef(`CFBEncrypt: plaintext/v: %v`, plaintext)
+	logger.Tracef(`CFBEncrypt: len(plaintext)/v: %v`, len(plaintext))
 
-	loggerCipher.Tracef(`CFBEncrypt: plaintextBytes/v: %v`, plaintextBytes)
-	loggerCipher.Tracef(`CFBEncrypt: len(plaintextBytes)/v: %v`, len(plaintextBytes))
+	logger.Tracef(`CFBEncrypt: plaintextBytes/v: %v`, plaintextBytes)
+	logger.Tracef(`CFBEncrypt: len(plaintextBytes)/v: %v`, len(plaintextBytes))
 
-	loggerCipher.Tracef(`CFBEncrypt: ciphertext/v: %v`, ciphertext)
-	loggerCipher.Tracef(`CFBEncrypt: len(ciphertext)/v: %v`, len(ciphertext))
+	logger.Tracef(`CFBEncrypt: ciphertext/v: %v`, ciphertext)
+	logger.Tracef(`CFBEncrypt: len(ciphertext)/v: %v`, len(ciphertext))
 
-	loggerCipher.Tracef(`CFBEncrypt: ciphertext/+v: %+v`, ciphertext)
-	loggerCipher.Tracef(`CFBEncrypt: len(ciphertext)/+v: %+v`, len(ciphertext))
+	logger.Tracef(`CFBEncrypt: ciphertext/+v: %+v`, ciphertext)
+	logger.Tracef(`CFBEncrypt: len(ciphertext)/+v: %+v`, len(ciphertext))
 
-	loggerCipher.Tracef(`CFBEncrypt: ciphertext/x: %x`, ciphertext)
-	loggerCipher.Tracef(`CFBEncrypt: len(ciphertext)/x: %x`, len(ciphertext))
+	logger.Tracef(`CFBEncrypt: ciphertext/x: %x`, ciphertext)
+	logger.Tracef(`CFBEncrypt: len(ciphertext)/x: %x`, len(ciphertext))
 
 	return ciphertext, newInitVector, nil
 }
@@ -175,28 +175,28 @@ func (ciph *Cipher) CFBDecrypt(ciphertext []byte, publicInitVector []byte) (stri
 		return ``, NewCipherAPIError(fmt.Errorf(`Cipher not prepared`))
 	}
 
-	loggerCipher.Tracef(`CFBDecrypt: ciphertext/\%x: %x`, ciphertext)
-	loggerCipher.Tracef(`CFBDecrypt: ciphertext/\%v: %v`, ciphertext)
-	loggerCipher.Tracef(`CFBDecrypt: len(ciphertext): %v`, len(ciphertext))
-	loggerCipher.Tracef(`CFBDecrypt: string(ciphertext): %s`, string(ciphertext))
+	logger.Tracef(`CFBDecrypt: ciphertext/\%x: %x`, ciphertext)
+	logger.Tracef(`CFBDecrypt: ciphertext/\%v: %v`, ciphertext)
+	logger.Tracef(`CFBDecrypt: len(ciphertext): %v`, len(ciphertext))
+	logger.Tracef(`CFBDecrypt: string(ciphertext): %s`, string(ciphertext))
 
-	loggerCipher.Tracef(`CFBDecrypt: publicInitVector: %v`, publicInitVector)
-	loggerCipher.Tracef(`CFBDecrypt: len(publicInitVector): %v`, len(publicInitVector))
+	logger.Tracef(`CFBDecrypt: publicInitVector: %v`, publicInitVector)
+	logger.Tracef(`CFBDecrypt: len(publicInitVector): %v`, len(publicInitVector))
 
 	cfbdec := cipher.NewCFBDecrypter(ciph.cipherBlock, publicInitVector)
 
-	loggerCipher.Tracef(`CFBDecrypt: len(ciphertext): %v`, len(ciphertext))
+	logger.Tracef(`CFBDecrypt: len(ciphertext): %v`, len(ciphertext))
 	plaintextCopy := make([]byte, len(ciphertext))
 	cfbdec.XORKeyStream(plaintextCopy, ciphertext)
 
 	fmt.Printf(`CFBDecrypt: %x => %s`, ciphertext, plaintextCopy)
 
-	loggerCipher.Tracef(`CFBDecrypt: len(ciphertext): %v`, len(ciphertext))
-	loggerCipher.Tracef(`CFBDecrypt: len(plaintextCopy): %v`, len(plaintextCopy))
+	logger.Tracef(`CFBDecrypt: len(ciphertext): %v`, len(ciphertext))
+	logger.Tracef(`CFBDecrypt: len(plaintextCopy): %v`, len(plaintextCopy))
 
 	plaintextString := string(plaintextCopy)
-	loggerCipher.Tracef(`CFBDecrypt: plaintextString: %v`, plaintextString)
-	loggerCipher.Tracef(`CFBDecrypt: len(plaintextString): %v`, len(plaintextString))
+	logger.Tracef(`CFBDecrypt: plaintextString: %v`, plaintextString)
+	logger.Tracef(`CFBDecrypt: len(plaintextString): %v`, len(plaintextString))
 
 	return plaintextString, nil
 }
